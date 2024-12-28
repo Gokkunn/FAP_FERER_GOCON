@@ -11,6 +11,8 @@ class PostItem extends StatefulWidget {
   final int likesCount;
   final int commentsCount;
   final int currentUserId;
+  final String firstName; // Keep the first name
+  final String lastName; // Keep the last name
 
   const PostItem({
     super.key,
@@ -22,6 +24,8 @@ class PostItem extends StatefulWidget {
     required this.likesCount,
     required this.commentsCount,
     required this.currentUserId,
+    required this.firstName,
+    required this.lastName,
   });
 
   @override
@@ -29,17 +33,15 @@ class PostItem extends StatefulWidget {
 }
 
 class _PostItemState extends State<PostItem> {
-  String postUserName = "Loading...";
-  String loggedInUserName = "Loading...";
+  String userName = "Loading...";
 
   @override
   void initState() {
     super.initState();
-    _fetchPostUserName();
-    _fetchLoggedInUserName();
+    _fetchUserName();
   }
 
-  Future<void> _fetchPostUserName() async {
+  Future<void> _fetchUserName() async {
     try {
       final userDoc = await FirebaseFirestore.instance
           .collection('tbl_users')
@@ -48,42 +50,24 @@ class _PostItemState extends State<PostItem> {
 
       if (userDoc.docs.isNotEmpty) {
         final userData = userDoc.docs.first.data();
-        setState(() {
-          postUserName = "${userData['firstName']} ${userData['lastName']}";
-        });
+        if (mounted) {
+          setState(() {
+            userName = "${userData['firstName']} ${userData['lastName']}";
+          });
+        }
       } else {
-        setState(() {
-          postUserName = "Unknown User";
-        });
+        if (mounted) {
+          setState(() {
+            userName = "Unknown User";
+          });
+        }
       }
     } catch (e) {
-      setState(() {
-        postUserName = "Error";
-      });
-    }
-  }
-
-  Future<void> _fetchLoggedInUserName() async {
-    try {
-      final userDoc = await FirebaseFirestore.instance
-          .collection('tbl_users')
-          .where('user_id', isEqualTo: widget.currentUserId)
-          .get();
-
-      if (userDoc.docs.isNotEmpty) {
-        final userData = userDoc.docs.first.data();
+      if (mounted) {
         setState(() {
-          loggedInUserName = "${userData['firstName']} ${userData['lastName']}";
-        });
-      } else {
-        setState(() {
-          loggedInUserName = "Unknown User";
+          userName = "Error";
         });
       }
-    } catch (e) {
-      setState(() {
-        loggedInUserName = "Error";
-      });
     }
   }
 
@@ -97,7 +81,7 @@ class _PostItemState extends State<PostItem> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ListTile(
-            title: Text(postUserName), // Display the fetched post creator's name
+            title: Text('${widget.firstName} ${widget.lastName}'), // Keep using passed names
             subtitle: Text(
               '${postDate.day}/${postDate.month}/${postDate.year} ${postDate.hour}:${postDate.minute}',
             ),
@@ -124,11 +108,9 @@ class _PostItemState extends State<PostItem> {
                     MaterialPageRoute(
                       builder: (context) => CommentsPage(
                         postId: widget.postId,
-                        firstName: loggedInUserName.split(' ').first,
-                        lastName: loggedInUserName.split(' ').length > 1
-                            ? loggedInUserName.split(' ')[1]
-                            : '',
                         currentUserId: widget.currentUserId,
+                        firstName: widget.firstName,
+                        lastName: widget.lastName,
                       ),
                     ),
                   );
