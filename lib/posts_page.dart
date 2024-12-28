@@ -33,7 +33,6 @@ class _PostsPageState extends State<PostsPage> {
         'image_url': '', // Placeholder for future image support
         'timestamp': Timestamp.now(),
         'likes_count': 0,
-        'comments_count': 0,
       });
 
       postController.clear();
@@ -109,27 +108,42 @@ class _PostsPageState extends State<PostsPage> {
                 itemCount: posts.length,
                 itemBuilder: (context, index) {
                   final post = posts[index];
-                  return FutureBuilder<Map<String, String>>(
-                    future: _fetchUserName(post['user_id']),
-                    builder: (context, userSnapshot) {
-                      if (userSnapshot.connectionState == ConnectionState.waiting) {
+
+                  return StreamBuilder<QuerySnapshot>(
+                    stream: FirebaseFirestore.instance
+                        .collection('tbl_comments')
+                        .where('post_id', isEqualTo: post['post_id'])
+                        .snapshots(),
+                    builder: (context, commentSnapshot) {
+                      if (commentSnapshot.connectionState == ConnectionState.waiting) {
                         return const Center(child: CircularProgressIndicator());
                       }
 
-                      final userName =
-                          userSnapshot.data ?? {"firstName": "Unknown", "lastName": "User"};
+                      final commentsCount = commentSnapshot.data?.docs.length ?? 0;
 
-                      return PostItem(
-                        postId: post['post_id'],
-                        userId: post['user_id'],
-                        content: post['content'],
-                        imageUrl: post['image_url'],
-                        timestamp: post['timestamp'],
-                        likesCount: post['likes_count'],
-                        commentsCount: post['comments_count'],
-                        currentUserId: widget.currentUserId,
-                        firstName: userName['firstName']!,
-                        lastName: userName['lastName']!,
+                      return FutureBuilder<Map<String, String>>(
+                        future: _fetchUserName(post['user_id']),
+                        builder: (context, userSnapshot) {
+                          if (userSnapshot.connectionState == ConnectionState.waiting) {
+                            return const Center(child: CircularProgressIndicator());
+                          }
+
+                          final userName =
+                              userSnapshot.data ?? {"firstName": "Unknown", "lastName": "User"};
+
+                          return PostItem(
+                            postId: post['post_id'],
+                            userId: post['user_id'],
+                            content: post['content'],
+                            imageUrl: post['image_url'],
+                            timestamp: post['timestamp'],
+                            likesCount: post['likes_count'],
+                            commentsCount: commentsCount, // Use dynamic count
+                            currentUserId: widget.currentUserId,
+                            firstName: userName['firstName']!,
+                            lastName: userName['lastName']!,
+                          );
+                        },
                       );
                     },
                   );
