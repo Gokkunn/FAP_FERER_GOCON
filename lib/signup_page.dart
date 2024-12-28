@@ -366,7 +366,7 @@ class SignInSignUpPageState extends State<SignInSignUpPage> with SingleTickerPro
     required String email,
     required int userId,
   }) {
-    Navigator.push(
+    Navigator.pushReplacement(
       context,
       MaterialPageRoute(
         builder: (context) => HomePage(
