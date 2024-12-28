@@ -327,7 +327,7 @@ class SignInSignUpPageState extends State<SignInSignUpPage> with SingleTickerPro
                 } else {
                   // ignore: use_build_context_synchronously
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Sign Up Successful!")),
+                    const SnackBar(content: Text("Wrong email or password!")),
                   );
                 }
               }

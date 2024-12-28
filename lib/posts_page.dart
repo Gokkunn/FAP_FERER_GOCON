@@ -4,8 +4,15 @@ import 'post_item.dart';
 
 class PostsPage extends StatefulWidget {
   final int currentUserId;
+  final String loggedInFirstName;
+  final String loggedInLastName;
 
-  const PostsPage({super.key, required this.currentUserId});
+  const PostsPage({
+    super.key,
+    required this.currentUserId,
+    required this.loggedInFirstName,
+    required this.loggedInLastName,
+  });
 
   @override
   State<PostsPage> createState() => _PostsPageState();

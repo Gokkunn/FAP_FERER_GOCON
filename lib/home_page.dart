@@ -32,9 +32,11 @@ class _HomePageState extends State<HomePage> {
       body: IndexedStack(
         index: currentIndex,
         children: [
-          // Updated to pass only userId to PostsPage
-          PostsPage(currentUserId: widget.userId),
-          // Pass all values to ProfilePage
+          PostsPage(
+            currentUserId: widget.userId,
+            loggedInFirstName: widget.firstName, // Pass logged-in user's first name
+            loggedInLastName: widget.lastName, // Pass logged-in user's last name
+          ),
           ProfilePage(
             firstName: widget.firstName,
             lastName: widget.lastName,

@@ -3,8 +3,17 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class CommentsPage extends StatefulWidget {
   final String postId;
+  final String firstName;
+  final String lastName;
+  final int currentUserId;
 
-  const CommentsPage({super.key, required this.postId});
+  const CommentsPage({
+    super.key,
+    required this.postId,
+    required this.firstName,
+    required this.lastName,
+    required this.currentUserId,
+  });
 
   @override
   State<CommentsPage> createState() => _CommentsPageState();
@@ -21,7 +30,7 @@ class _CommentsPageState extends State<CommentsPage> {
       await FirebaseFirestore.instance.collection('tbl_comments').doc(commentId).set({
         'comment_id': commentId,
         'post_id': widget.postId,
-        'user_id': "current_user_id", // Replace with the actual current user ID
+        'user_id': widget.currentUserId.toString(),
         'content': commentController.text.trim(),
         'timestamp': Timestamp.now(),
       });
@@ -33,26 +42,6 @@ class _CommentsPageState extends State<CommentsPage> {
         SnackBar(content: Text("Failed to post comment: $e")),
       );
     }
-  }
-
-  Future<Map<String, String>> _fetchUserName(String userId) async {
-    try {
-      final userDoc = await FirebaseFirestore.instance
-          .collection('tbl_users')
-          .where('user_id', isEqualTo: int.tryParse(userId))
-          .get();
-
-      if (userDoc.docs.isNotEmpty) {
-        final userData = userDoc.docs.first.data();
-        return {
-          "firstName": userData['firstName'] ?? "Unknown",
-          "lastName": userData['lastName'] ?? "User"
-        };
-      }
-    } catch (e) {
-      debugPrint("Error fetching user name: $e");
-    }
-    return {"firstName": "Unknown", "lastName": "User"};
   }
 
   @override
@@ -91,31 +80,10 @@ class _CommentsPageState extends State<CommentsPage> {
                   itemBuilder: (context, index) {
                     final comment = comments[index];
                     final content = comment['content'] ?? 'No content';
-                    final commentUserId = comment['user_id'];
 
-                    return FutureBuilder<Map<String, String>>(
-                      future: _fetchUserName(commentUserId),
-                      builder: (context, userSnapshot) {
-                        if (userSnapshot.connectionState == ConnectionState.waiting) {
-                          return const ListTile(
-                            title: Text("Loading..."),
-                            subtitle: Text("Fetching user data"),
-                          );
-                        }
-
-                        if (userSnapshot.hasError || userSnapshot.data == null) {
-                          return ListTile(
-                            title: const Text("Unknown User"),
-                            subtitle: Text(content),
-                          );
-                        }
-
-                        final userName = userSnapshot.data!;
-                        return ListTile(
-                          title: Text("${userName['firstName']} ${userName['lastName']}"),
-                          subtitle: Text(content),
-                        );
-                      },
+                    return ListTile(
+                      title: Text("${widget.firstName} ${widget.lastName}"),
+                      subtitle: Text(content),
                     );
                   },
                 );

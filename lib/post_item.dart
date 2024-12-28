@@ -29,15 +29,17 @@ class PostItem extends StatefulWidget {
 }
 
 class _PostItemState extends State<PostItem> {
-  String userName = "Loading...";
+  String postUserName = "Loading...";
+  String loggedInUserName = "Loading...";
 
   @override
   void initState() {
     super.initState();
-    _fetchUserName();
+    _fetchPostUserName();
+    _fetchLoggedInUserName();
   }
 
-  Future<void> _fetchUserName() async {
+  Future<void> _fetchPostUserName() async {
     try {
       final userDoc = await FirebaseFirestore.instance
           .collection('tbl_users')
@@ -47,16 +49,40 @@ class _PostItemState extends State<PostItem> {
       if (userDoc.docs.isNotEmpty) {
         final userData = userDoc.docs.first.data();
         setState(() {
-          userName = "${userData['firstName']} ${userData['lastName']}";
+          postUserName = "${userData['firstName']} ${userData['lastName']}";
         });
       } else {
         setState(() {
-          userName = "Unknown User";
+          postUserName = "Unknown User";
         });
       }
     } catch (e) {
       setState(() {
-        userName = "Error";
+        postUserName = "Error";
+      });
+    }
+  }
+
+  Future<void> _fetchLoggedInUserName() async {
+    try {
+      final userDoc = await FirebaseFirestore.instance
+          .collection('tbl_users')
+          .where('user_id', isEqualTo: widget.currentUserId)
+          .get();
+
+      if (userDoc.docs.isNotEmpty) {
+        final userData = userDoc.docs.first.data();
+        setState(() {
+          loggedInUserName = "${userData['firstName']} ${userData['lastName']}";
+        });
+      } else {
+        setState(() {
+          loggedInUserName = "Unknown User";
+        });
+      }
+    } catch (e) {
+      setState(() {
+        loggedInUserName = "Error";
       });
     }
   }
@@ -71,7 +97,7 @@ class _PostItemState extends State<PostItem> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ListTile(
-            title: Text(userName), // Display the fetched user's name
+            title: Text(postUserName), // Display the fetched post creator's name
             subtitle: Text(
               '${postDate.day}/${postDate.month}/${postDate.year} ${postDate.hour}:${postDate.minute}',
             ),
@@ -96,7 +122,14 @@ class _PostItemState extends State<PostItem> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => CommentsPage(postId: widget.postId),
+                      builder: (context) => CommentsPage(
+                        postId: widget.postId,
+                        firstName: loggedInUserName.split(' ').first,
+                        lastName: loggedInUserName.split(' ').length > 1
+                            ? loggedInUserName.split(' ')[1]
+                            : '',
+                        currentUserId: widget.currentUserId,
+                      ),
                     ),
                   );
                 },
