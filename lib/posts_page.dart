@@ -30,9 +30,10 @@ class _PostsPageState extends State<PostsPage> {
         'post_id': postId,
         'user_id': widget.currentUserId,
         'content': postController.text.trim(),
-        'image_url': '', // Placeholder for future image support
+        'image_url': '',
         'timestamp': Timestamp.now(),
         'likes_count': 0,
+        'liked_by': [], // Initialize liked_by
       });
 
       postController.clear();
@@ -65,6 +66,29 @@ class _PostsPageState extends State<PostsPage> {
       // Handle error
     }
     return {"firstName": "Unknown", "lastName": "User"};
+  }
+
+  Future<void> _toggleLike(String postId, List<dynamic> likedBy) async {
+    try {
+      final isLiked = likedBy.contains(widget.currentUserId);
+      final postRef = FirebaseFirestore.instance.collection('tbl_posts').doc(postId);
+
+      if (isLiked) {
+        await postRef.update({
+          'likes_count': FieldValue.increment(-1),
+          'liked_by': FieldValue.arrayRemove([widget.currentUserId]),
+        });
+      } else {
+        await postRef.update({
+          'likes_count': FieldValue.increment(1),
+          'liked_by': FieldValue.arrayUnion([widget.currentUserId]),
+        });
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error toggling like: $e')),
+      );
+    }
   }
 
   @override
@@ -108,6 +132,7 @@ class _PostsPageState extends State<PostsPage> {
                 itemCount: posts.length,
                 itemBuilder: (context, index) {
                   final post = posts[index];
+                  final likedBy = (post.data() as Map<String, dynamic>)['liked_by'] ?? <dynamic>[];
 
                   return StreamBuilder<QuerySnapshot>(
                     stream: FirebaseFirestore.instance
@@ -115,10 +140,6 @@ class _PostsPageState extends State<PostsPage> {
                         .where('post_id', isEqualTo: post['post_id'])
                         .snapshots(),
                     builder: (context, commentSnapshot) {
-                      if (commentSnapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(child: CircularProgressIndicator());
-                      }
-
                       final commentsCount = commentSnapshot.data?.docs.length ?? 0;
 
                       return FutureBuilder<Map<String, String>>(
@@ -138,10 +159,12 @@ class _PostsPageState extends State<PostsPage> {
                             imageUrl: post['image_url'],
                             timestamp: post['timestamp'],
                             likesCount: post['likes_count'],
-                            commentsCount: commentsCount, // Use dynamic count
+                            commentsCount: commentsCount, // Dynamic comments count
                             currentUserId: widget.currentUserId,
                             firstName: userName['firstName']!,
                             lastName: userName['lastName']!,
+                            isLiked: likedBy.contains(widget.currentUserId),
+                            onLikePressed: () => _toggleLike(post['post_id'], likedBy),
                           );
                         },
                       );

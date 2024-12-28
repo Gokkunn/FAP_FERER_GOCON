@@ -11,8 +11,10 @@ class PostItem extends StatefulWidget {
   final int likesCount;
   final int commentsCount;
   final int currentUserId;
-  final String firstName; // Keep the first name
-  final String lastName; // Keep the last name
+  final String firstName;
+  final String lastName;
+  final bool isLiked; // Indicates if the current user has liked the post
+  final VoidCallback onLikePressed; // Function to toggle like state
 
   const PostItem({
     super.key,
@@ -26,6 +28,8 @@ class PostItem extends StatefulWidget {
     required this.currentUserId,
     required this.firstName,
     required this.lastName,
+    required this.isLiked,
+    required this.onLikePressed,
   });
 
   @override
@@ -33,44 +37,6 @@ class PostItem extends StatefulWidget {
 }
 
 class _PostItemState extends State<PostItem> {
-  String userName = "Loading...";
-
-  @override
-  void initState() {
-    super.initState();
-    _fetchUserName();
-  }
-
-  Future<void> _fetchUserName() async {
-    try {
-      final userDoc = await FirebaseFirestore.instance
-          .collection('tbl_users')
-          .where('user_id', isEqualTo: widget.userId)
-          .get();
-
-      if (userDoc.docs.isNotEmpty) {
-        final userData = userDoc.docs.first.data();
-        if (mounted) {
-          setState(() {
-            userName = "${userData['firstName']} ${userData['lastName']}";
-          });
-        }
-      } else {
-        if (mounted) {
-          setState(() {
-            userName = "Unknown User";
-          });
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          userName = "Error";
-        });
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final postDate = widget.timestamp.toDate();
@@ -81,7 +47,7 @@ class _PostItemState extends State<PostItem> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ListTile(
-            title: Text('${widget.firstName} ${widget.lastName}'), // Keep using passed names
+            title: Text('${widget.firstName} ${widget.lastName}'),
             subtitle: Text(
               '${postDate.day}/${postDate.month}/${postDate.year} ${postDate.hour}:${postDate.minute}',
             ),
@@ -95,11 +61,12 @@ class _PostItemState extends State<PostItem> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               TextButton.icon(
-                onPressed: () {
-                  // Implement like functionality here
-                },
-                icon: const Icon(Icons.thumb_up),
-                label: Text(widget.likesCount.toString()),
+                onPressed: widget.onLikePressed, // Toggles the like state
+                icon: Icon(
+                  widget.isLiked ? Icons.thumb_up : Icons.thumb_up_outlined,
+                  color: widget.isLiked ? Colors.blue : Colors.grey,
+                ),
+                label: Text(widget.likesCount.toString()), // Shows likes count
               ),
               TextButton(
                 onPressed: () {
@@ -115,7 +82,7 @@ class _PostItemState extends State<PostItem> {
                     ),
                   );
                 },
-                child: Text("Comments (${widget.commentsCount})"),
+                child: Text("Comments (${widget.commentsCount})"), // Shows comments count
               ),
             ],
           ),
