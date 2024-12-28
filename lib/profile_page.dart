@@ -75,18 +75,20 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color.fromRGBO(1, 10, 27, 1), // Dark background
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 "${widget.firstName} ${widget.lastName}",
                 style: const TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
-                  color: Colors.blueAccent,
+                  color: Colors.white, // Text color for contrast
                 ),
               ),
               const SizedBox(height: 5),
@@ -98,21 +100,47 @@ class _ProfilePageState extends State<ProfilePage> {
                   color: Colors.grey,
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 10),
+              Divider(
+                color: Colors.grey.withOpacity(0.5),
+                thickness: 0.5,
+              ),
+              const SizedBox(height: 10),
               TextField(
                 controller: bioController,
                 decoration: InputDecoration(
                   labelText: 'Bio',
+                  labelStyle: const TextStyle(color: Colors.grey),
+                  filled: true,
+                  fillColor: const Color.fromRGBO(20, 30, 50, 1), // Darker input field background
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide.none,
                   ),
                 ),
+                style: const TextStyle(color: Colors.white), // Input text color
                 maxLines: 3,
               ),
-              const SizedBox(height: 10),
-              ElevatedButton(
-                onPressed: _updateBio,
-                child: const Text("Update Bio"),
+              const SizedBox(height: 20),
+              Center(
+                // Center the button
+                child: ElevatedButton(
+                  onPressed: _updateBio,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color.fromRGBO(30, 60, 90, 1), // Button background color
+                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: const Text(
+                    "Update Bio",
+                    style: TextStyle(
+                      color: Colors.white, // Button text color
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
               ),
             ],
           ),

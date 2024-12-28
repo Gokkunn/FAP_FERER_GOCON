@@ -26,8 +26,18 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color.fromRGBO(1, 10, 27, 1), // Dark background
       appBar: AppBar(
-        title: Text(currentIndex == 0 ? "Posts" : "Profile"),
+        backgroundColor: const Color.fromRGBO(20, 30, 50, 1), // Darker AppBar color
+        title: Text(
+          currentIndex == 0 ? "Posts" : "Profile",
+          style: const TextStyle(
+            color: Colors.white, // White text for contrast
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        elevation: 0, // Flat app bar for a modern look
       ),
       body: IndexedStack(
         index: currentIndex,
@@ -46,7 +56,10 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: const Color.fromRGBO(20, 30, 50, 1), // Darker background
         currentIndex: currentIndex,
+        selectedItemColor: Colors.blueAccent, // Highlight for selected item
+        unselectedItemColor: Colors.grey, // Subtle color for unselected items
         onTap: (int index) {
           setState(() {
             currentIndex = index;

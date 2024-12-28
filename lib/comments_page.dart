@@ -64,8 +64,16 @@ class CommentsPage extends StatelessWidget {
     final TextEditingController commentController = TextEditingController();
 
     return Scaffold(
+      backgroundColor: const Color.fromRGBO(1, 10, 27, 1), // Dark background
       appBar: AppBar(
-        title: const Text("Comments"),
+        backgroundColor: const Color.fromRGBO(20, 30, 50, 1), // Darker AppBar
+        title: const Text(
+          "Comments",
+          style: TextStyle(
+              color: Colors.white, fontWeight: FontWeight.bold), // White text for contrast
+        ),
+        iconTheme: const IconThemeData(color: Colors.white), // White back arrow
+        elevation: 0,
       ),
       body: Column(
         children: [
@@ -74,13 +82,18 @@ class CommentsPage extends StatelessWidget {
             padding: const EdgeInsets.all(8.0),
             child: TextField(
               controller: commentController,
+              style: const TextStyle(color: Colors.white), // Input text color
               decoration: InputDecoration(
                 labelText: 'Add a comment...',
+                labelStyle: const TextStyle(color: Colors.grey), // Label color
+                filled: true,
+                fillColor: const Color.fromRGBO(20, 30, 50, 1), // Dark input field
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide.none,
                 ),
                 suffixIcon: IconButton(
-                  icon: const Icon(Icons.send),
+                  icon: const Icon(Icons.send, color: Colors.blueAccent), // Highlighted arrow
                   onPressed: () {
                     _postComment(context, commentController.text);
                     commentController.clear();
@@ -102,14 +115,25 @@ class CommentsPage extends StatelessWidget {
                 }
 
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  return const Center(child: Text("No comments yet."));
+                  return const Center(
+                    child: Text(
+                      "No comments yet.",
+                      style: TextStyle(color: Colors.grey), // Grey text for empty state
+                    ),
+                  );
                 }
 
                 final comments = snapshot.data!.docs
                   ..sort((a, b) => b['timestamp'].compareTo(a['timestamp']));
 
-                return ListView.builder(
+                return ListView.separated(
                   itemCount: comments.length,
+                  separatorBuilder: (context, index) => Divider(
+                    color: Colors.grey.withOpacity(0.3), // Subtle divider color
+                    thickness: 0.5,
+                    indent: 16,
+                    endIndent: 16,
+                  ),
                   itemBuilder: (context, index) {
                     final comment = comments[index];
                     final content = comment['content'] ?? 'No content';
@@ -120,22 +144,29 @@ class CommentsPage extends StatelessWidget {
                       builder: (context, userSnapshot) {
                         if (userSnapshot.connectionState == ConnectionState.waiting) {
                           return const ListTile(
-                            title: Text("Loading..."),
-                            subtitle: Text("Fetching user data"),
+                            title: Text("Loading...", style: TextStyle(color: Colors.grey)),
+                            subtitle:
+                                Text("Fetching user data", style: TextStyle(color: Colors.grey)),
                           );
                         }
 
                         if (userSnapshot.hasError || userSnapshot.data == null) {
                           return ListTile(
-                            title: const Text("Unknown User"),
-                            subtitle: Text(content),
+                            title: const Text("Unknown User", style: TextStyle(color: Colors.grey)),
+                            subtitle: Text(content, style: const TextStyle(color: Colors.white)),
                           );
                         }
 
                         final userName = userSnapshot.data!;
                         return ListTile(
-                          title: Text("${userName['firstName']} ${userName['lastName']}"),
-                          subtitle: Text(content),
+                          title: Text(
+                            "${userName['firstName']} ${userName['lastName']}",
+                            style: const TextStyle(color: Colors.white), // White text
+                          ),
+                          subtitle: Text(
+                            content,
+                            style: const TextStyle(color: Colors.grey), // Grey text for content
+                          ),
                         );
                       },
                     );

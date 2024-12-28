@@ -33,7 +33,7 @@ class _PostsPageState extends State<PostsPage> {
         'image_url': '',
         'timestamp': Timestamp.now(),
         'likes_count': 0,
-        'liked_by': [], // Initialize liked_by
+        'liked_by': [],
       });
 
       postController.clear();
@@ -93,89 +93,103 @@ class _PostsPageState extends State<PostsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: TextField(
-            controller: postController,
-            decoration: InputDecoration(
-              labelText: 'What\'s on your mind?',
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-              suffixIcon: IconButton(
-                icon: const Icon(Icons.send),
-                onPressed: _createPost,
+    return Scaffold(
+      backgroundColor: const Color.fromRGBO(1, 10, 27, 1), // Dark background
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: TextField(
+              controller: postController,
+              style: const TextStyle(color: Colors.white), // Text color in dark mode
+              decoration: InputDecoration(
+                labelText: 'What\'s on your mind?',
+                labelStyle: const TextStyle(color: Colors.grey),
+                filled: true,
+                fillColor: const Color.fromRGBO(20, 30, 50, 1), // Input field background
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+                suffixIcon: IconButton(
+                  icon: const Icon(Icons.send, color: Colors.white),
+                  onPressed: _createPost,
+                ),
               ),
             ),
           ),
-        ),
-        Expanded(
-          child: StreamBuilder<QuerySnapshot>(
-            stream: FirebaseFirestore.instance
-                .collection('tbl_posts')
-                .orderBy('timestamp', descending: true) // Display newest posts first
-                .snapshots(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
-              }
+          Expanded(
+            child: StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('tbl_posts')
+                  .orderBy('timestamp', descending: true)
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
 
-              if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                return const Center(child: Text("No posts available."));
-              }
-
-              final posts = snapshot.data!.docs;
-
-              return ListView.builder(
-                itemCount: posts.length,
-                itemBuilder: (context, index) {
-                  final post = posts[index];
-                  final likedBy = (post.data() as Map<String, dynamic>)['liked_by'] ?? <dynamic>[];
-
-                  return StreamBuilder<QuerySnapshot>(
-                    stream: FirebaseFirestore.instance
-                        .collection('tbl_comments')
-                        .where('post_id', isEqualTo: post['post_id'])
-                        .snapshots(),
-                    builder: (context, commentSnapshot) {
-                      final commentsCount = commentSnapshot.data?.docs.length ?? 0;
-
-                      return FutureBuilder<Map<String, String>>(
-                        future: _fetchUserName(post['user_id']),
-                        builder: (context, userSnapshot) {
-                          if (userSnapshot.connectionState == ConnectionState.waiting) {
-                            return const Center(child: CircularProgressIndicator());
-                          }
-
-                          final userName =
-                              userSnapshot.data ?? {"firstName": "Unknown", "lastName": "User"};
-
-                          return PostItem(
-                            postId: post['post_id'],
-                            userId: post['user_id'],
-                            content: post['content'],
-                            imageUrl: post['image_url'],
-                            timestamp: post['timestamp'],
-                            likesCount: post['likes_count'],
-                            commentsCount: commentsCount, // Dynamic comments count
-                            currentUserId: widget.currentUserId,
-                            firstName: userName['firstName']!,
-                            lastName: userName['lastName']!,
-                            isLiked: likedBy.contains(widget.currentUserId),
-                            onLikePressed: () => _toggleLike(post['post_id'], likedBy),
-                          );
-                        },
-                      );
-                    },
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return const Center(
+                    child: Text(
+                      "No posts available.",
+                      style: TextStyle(color: Colors.grey),
+                    ),
                   );
-                },
-              );
-            },
+                }
+
+                final posts = snapshot.data!.docs;
+
+                return ListView.builder(
+                  itemCount: posts.length,
+                  itemBuilder: (context, index) {
+                    final post = posts[index];
+                    final likedBy =
+                        (post.data() as Map<String, dynamic>)['liked_by'] ?? <dynamic>[];
+
+                    return StreamBuilder<QuerySnapshot>(
+                      stream: FirebaseFirestore.instance
+                          .collection('tbl_comments')
+                          .where('post_id', isEqualTo: post['post_id'])
+                          .snapshots(),
+                      builder: (context, commentSnapshot) {
+                        final commentsCount = commentSnapshot.data?.docs.length ?? 0;
+
+                        return FutureBuilder<Map<String, String>>(
+                          future: _fetchUserName(post['user_id']),
+                          builder: (context, userSnapshot) {
+                            if (userSnapshot.connectionState == ConnectionState.waiting) {
+                              return const Center(child: CircularProgressIndicator());
+                            }
+
+                            final userName =
+                                userSnapshot.data ?? {"firstName": "Unknown", "lastName": "User"};
+
+                            return PostItem(
+                              postId: post['post_id'],
+                              userId: post['user_id'],
+                              content: post['content'],
+                              imageUrl: post['image_url'],
+                              timestamp: post['timestamp'],
+                              likesCount: post['likes_count'],
+                              commentsCount: commentsCount,
+                              currentUserId: widget.currentUserId,
+                              firstName: userName['firstName']!,
+                              lastName: userName['lastName']!,
+                              isLiked: likedBy.contains(widget.currentUserId),
+                              onLikePressed: () => _toggleLike(post['post_id'], likedBy),
+                            );
+                          },
+                        );
+                      },
+                    );
+                  },
+                );
+              },
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

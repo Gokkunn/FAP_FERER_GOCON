@@ -42,20 +42,45 @@ class _PostItemState extends State<PostItem> {
     final postDate = widget.timestamp.toDate();
 
     return Card(
+      color: const Color.fromRGBO(20, 30, 50, 1), // Dark card background
       margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12), // Rounded corners
+      ),
+      elevation: 4, // Slight elevation for depth
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ListTile(
-            title: Text('${widget.firstName} ${widget.lastName}'),
+            title: Text(
+              '${widget.firstName} ${widget.lastName}',
+              style: const TextStyle(
+                color: Colors.white, // White text for dark mode
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             subtitle: Text(
               '${postDate.day}/${postDate.month}/${postDate.year} ${postDate.hour}:${postDate.minute}',
+              style: const TextStyle(color: Colors.grey),
             ),
           ),
-          if (widget.imageUrl.isNotEmpty) Image.network(widget.imageUrl, fit: BoxFit.cover),
+          if (widget.imageUrl.isNotEmpty)
+            ClipRRect(
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+              child: Image.network(
+                widget.imageUrl,
+                fit: BoxFit.cover,
+              ),
+            ),
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Text(widget.content),
+            child: Text(
+              widget.content,
+              style: const TextStyle(
+                color: Colors.white, // White text for readability
+                fontSize: 16,
+              ),
+            ),
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -64,9 +89,12 @@ class _PostItemState extends State<PostItem> {
                 onPressed: widget.onLikePressed, // Toggles the like state
                 icon: Icon(
                   widget.isLiked ? Icons.thumb_up : Icons.thumb_up_outlined,
-                  color: widget.isLiked ? Colors.blue : Colors.grey,
+                  color: widget.isLiked ? Colors.blueAccent : Colors.grey,
                 ),
-                label: Text(widget.likesCount.toString()), // Shows likes count
+                label: Text(
+                  widget.likesCount.toString(),
+                  style: const TextStyle(color: Colors.white), // White text for likes count
+                ),
               ),
               TextButton(
                 onPressed: () {
@@ -82,7 +110,10 @@ class _PostItemState extends State<PostItem> {
                     ),
                   );
                 },
-                child: Text("Comments (${widget.commentsCount})"), // Shows comments count
+                child: Text(
+                  "Comments (${widget.commentsCount})",
+                  style: const TextStyle(color: Colors.white), // White text for comments count
+                ),
               ),
             ],
           ),
