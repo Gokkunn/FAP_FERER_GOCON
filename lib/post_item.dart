@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'comments_page.dart';
 
-class PostItem extends StatelessWidget {
+class PostItem extends StatefulWidget {
   final String postId;
   final int userId;
   final String content;
@@ -11,8 +11,6 @@ class PostItem extends StatelessWidget {
   final int likesCount;
   final int commentsCount;
   final int currentUserId;
-  final String firstName;
-  final String lastName;
 
   const PostItem({
     super.key,
@@ -24,13 +22,48 @@ class PostItem extends StatelessWidget {
     required this.likesCount,
     required this.commentsCount,
     required this.currentUserId,
-    required this.firstName,
-    required this.lastName,
   });
 
   @override
+  State<PostItem> createState() => _PostItemState();
+}
+
+class _PostItemState extends State<PostItem> {
+  String userName = "Loading...";
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserName();
+  }
+
+  Future<void> _fetchUserName() async {
+    try {
+      final userDoc = await FirebaseFirestore.instance
+          .collection('tbl_users')
+          .where('user_id', isEqualTo: widget.userId)
+          .get();
+
+      if (userDoc.docs.isNotEmpty) {
+        final userData = userDoc.docs.first.data();
+        setState(() {
+          userName = "${userData['firstName']} ${userData['lastName']}";
+        });
+      } else {
+        setState(() {
+          userName = "Unknown User";
+        });
+      }
+    } catch (e) {
+      setState(() {
+        userName = "Error";
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final postDate = timestamp.toDate();
+    final postDate = widget.timestamp.toDate();
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -38,39 +71,36 @@ class PostItem extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ListTile(
-            title: Text('$firstName $lastName'),
+            title: Text(userName), // Display the fetched user's name
             subtitle: Text(
               '${postDate.day}/${postDate.month}/${postDate.year} ${postDate.hour}:${postDate.minute}',
             ),
           ),
-          if (imageUrl.isNotEmpty) Image.network(imageUrl, fit: BoxFit.cover),
+          if (widget.imageUrl.isNotEmpty) Image.network(widget.imageUrl, fit: BoxFit.cover),
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Text(content),
+            child: Text(widget.content),
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               TextButton.icon(
-                onPressed: () {},
+                onPressed: () {
+                  // Implement like functionality here
+                },
                 icon: const Icon(Icons.thumb_up),
-                label: Text(likesCount.toString()),
+                label: Text(widget.likesCount.toString()),
               ),
               TextButton(
                 onPressed: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => CommentsPage(
-                        postId: postId,
-                        firstName: firstName,
-                        lastName: lastName,
-                        userId: currentUserId,
-                      ),
+                      builder: (context) => CommentsPage(postId: widget.postId),
                     ),
                   );
                 },
-                child: Text("Comments ($commentsCount)"),
+                child: Text("Comments (${widget.commentsCount})"),
               ),
             ],
           ),

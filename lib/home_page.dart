@@ -5,7 +5,7 @@ import 'profile_page.dart';
 class HomePage extends StatefulWidget {
   final String firstName;
   final String lastName;
-  final String email; // Ensure this is passed correctly
+  final String email;
   final int userId;
 
   const HomePage({
@@ -32,17 +32,13 @@ class _HomePageState extends State<HomePage> {
       body: IndexedStack(
         index: currentIndex,
         children: [
-          // Pass values to PostsPage
-          PostsPage(
-            firstName: widget.firstName,
-            lastName: widget.lastName,
-            userId: widget.userId,
-          ),
+          // Updated to pass only userId to PostsPage
+          PostsPage(currentUserId: widget.userId),
           // Pass all values to ProfilePage
           ProfilePage(
             firstName: widget.firstName,
             lastName: widget.lastName,
-            email: widget.email, // Pass email properly
+            email: widget.email,
             userId: widget.userId,
           ),
         ],
