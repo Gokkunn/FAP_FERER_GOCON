@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "889740072753",
+    "project_id": "fap-project-23273",
+    "storage_bucket": "fap-project-23273.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:889740072753:android:835f8e0799b06e3b2ec210",
+        "android_client_info": {
+          "package_name": "com.example.fap_ferrer_gocon"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDF0ePBd3lQ8aXEDhRUmz9YouRi6p-Bkls"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:889740072753:android:a00e0dffc6385aed2ec210",
+        "android_client_info": {
+          "package_name": "com.example.final_project"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDF0ePBd3lQ8aXEDhRUmz9YouRi6p-Bkls"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
