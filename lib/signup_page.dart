@@ -30,15 +30,15 @@ class SignInSignUpPageState extends State<SignInSignUpPage> with SingleTickerPro
   final GlobalKey<FormState> signUpKey = GlobalKey<FormState>();
   final TextEditingController firstNameController = TextEditingController();
   final TextEditingController lastNameController = TextEditingController();
-  final TextEditingController signUpUsernameController = TextEditingController();
   final TextEditingController signUpEmailController = TextEditingController();
   final TextEditingController signUpPasswordController = TextEditingController();
+  bool isSignUpPasswordVisible = false;
 
   // SignIn
   final GlobalKey<FormState> signInKey = GlobalKey<FormState>();
   final TextEditingController signInEmailController = TextEditingController();
   final TextEditingController signInPasswordController = TextEditingController();
-  bool isPasswordVisible = false; // Toggle for password visibility
+  bool isSignInPasswordVisible = false;
 
   @override
   void initState() {
@@ -67,7 +67,6 @@ class SignInSignUpPageState extends State<SignInSignUpPage> with SingleTickerPro
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // TabBar for Sign In and Sign Up
                 TabBar(
                   controller: tabController,
                   indicatorColor: const Color.fromRGBO(83, 100, 147, 1),
@@ -79,15 +78,12 @@ class SignInSignUpPageState extends State<SignInSignUpPage> with SingleTickerPro
                   ],
                 ),
                 const SizedBox(height: 20),
-                // TabBarView for the respective forms
                 SizedBox(
                   height: 400,
                   child: TabBarView(
                     controller: tabController,
                     children: [
-                      // Sign In Form
                       buildLoginForm(),
-                      // Sign Up Form
                       buildSignUpForm(),
                     ],
                   ),
@@ -100,7 +96,6 @@ class SignInSignUpPageState extends State<SignInSignUpPage> with SingleTickerPro
     );
   }
 
-  // Sign Up Form Widget
   Widget buildSignUpForm() {
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -114,7 +109,6 @@ class SignInSignUpPageState extends State<SignInSignUpPage> with SingleTickerPro
               children: [
                 Row(
                   children: [
-                    // First Name
                     Expanded(
                       child: TextFormField(
                         controller: firstNameController,
@@ -141,7 +135,6 @@ class SignInSignUpPageState extends State<SignInSignUpPage> with SingleTickerPro
                       ),
                     ),
                     const SizedBox(width: 10),
-                    // Last Name
                     Expanded(
                       child: TextFormField(
                         controller: lastNameController,
@@ -165,7 +158,6 @@ class SignInSignUpPageState extends State<SignInSignUpPage> with SingleTickerPro
                   ],
                 ),
                 const SizedBox(height: 10),
-                // Email
                 TextFormField(
                   controller: signUpEmailController,
                   decoration: InputDecoration(
@@ -185,7 +177,6 @@ class SignInSignUpPageState extends State<SignInSignUpPage> with SingleTickerPro
                   validator: (value) => value!.isEmpty ? 'Please enter email' : null,
                 ),
                 const SizedBox(height: 10),
-                // Password
                 TextFormField(
                   controller: signUpPasswordController,
                   decoration: InputDecoration(
@@ -200,8 +191,19 @@ class SignInSignUpPageState extends State<SignInSignUpPage> with SingleTickerPro
                         color: Color.fromRGBO(83, 100, 147, 1),
                       ),
                     ),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        isSignUpPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                        color: Colors.grey,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          isSignUpPasswordVisible = !isSignUpPasswordVisible;
+                        });
+                      },
+                    ),
                   ),
-                  obscureText: true,
+                  obscureText: !isSignUpPasswordVisible,
                   style: const TextStyle(color: Colors.white),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -224,9 +226,6 @@ class SignInSignUpPageState extends State<SignInSignUpPage> with SingleTickerPro
                     ),
                     onPressed: () async {
                       if (signUpKey.currentState!.validate()) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("Sign Up Successful!")),
-                        );
                         await storeFireData();
                       }
                     },
@@ -241,14 +240,12 @@ class SignInSignUpPageState extends State<SignInSignUpPage> with SingleTickerPro
     );
   }
 
-  // Login Form Widget
   Widget buildLoginForm() {
     return Form(
       key: signInKey,
       child: Column(
         children: [
           const SizedBox(height: 30),
-          // Email
           TextFormField(
             controller: signInEmailController,
             style: const TextStyle(color: Colors.white),
@@ -273,11 +270,10 @@ class SignInSignUpPageState extends State<SignInSignUpPage> with SingleTickerPro
             },
           ),
           const SizedBox(height: 20),
-          // Password
           TextFormField(
             controller: signInPasswordController,
             style: const TextStyle(color: Colors.white),
-            obscureText: true,
+            obscureText: !isSignInPasswordVisible,
             decoration: InputDecoration(
               labelText: 'Password',
               labelStyle: const TextStyle(color: Colors.white),
@@ -290,6 +286,17 @@ class SignInSignUpPageState extends State<SignInSignUpPage> with SingleTickerPro
                   color: Color.fromRGBO(83, 100, 147, 1),
                 ),
               ),
+              suffixIcon: IconButton(
+                icon: Icon(
+                  isSignInPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                  color: Colors.grey,
+                ),
+                onPressed: () {
+                  setState(() {
+                    isSignInPasswordVisible = !isSignInPasswordVisible;
+                  });
+                },
+              ),
             ),
             validator: (value) {
               if (value == null || value.isEmpty) {
@@ -301,7 +308,6 @@ class SignInSignUpPageState extends State<SignInSignUpPage> with SingleTickerPro
             },
           ),
           const SizedBox(height: 20),
-          // Login Button
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color.fromRGBO(83, 100, 147, 1),
@@ -325,7 +331,6 @@ class SignInSignUpPageState extends State<SignInSignUpPage> with SingleTickerPro
                     userId: userData['user_id'],
                   );
                 } else {
-                  // ignore: use_build_context_synchronously
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text("Wrong email or password!")),
                   );
@@ -383,7 +388,6 @@ class SignInSignUpPageState extends State<SignInSignUpPage> with SingleTickerPro
     try {
       final usersCollection = FirebaseFirestore.instance.collection('tbl_users');
 
-      // Get the current highest user_id
       final querySnapshot =
           await usersCollection.orderBy('user_id', descending: true).limit(1).get();
       int nextUserId = 1;
@@ -398,8 +402,19 @@ class SignInSignUpPageState extends State<SignInSignUpPage> with SingleTickerPro
         'email': signUpEmailController.text,
         'password': signUpPasswordController.text,
       });
+
+      firstNameController.clear();
+      lastNameController.clear();
+      signUpEmailController.clear();
+      signUpPasswordController.clear();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Sign Up Successful! Fields cleared.")),
+      );
     } catch (e) {
-      log("Error storing user data: $e", name: "SignUp");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error storing user data: $e")),
+      );
     }
   }
 }
