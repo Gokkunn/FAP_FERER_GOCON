@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'signup_page.dart';
 
 class ProfilePage extends StatefulWidget {
   final String firstName;
@@ -72,6 +73,15 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
+  void _logout() {
+    // Clear session or perform any logout operations here
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => const SignUpPage()),
+      (route) => false,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -123,7 +133,6 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
               const SizedBox(height: 20),
               Center(
-                // Center the button
                 child: ElevatedButton(
                   onPressed: _updateBio,
                   style: ElevatedButton.styleFrom(
@@ -135,6 +144,26 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                   child: const Text(
                     "Update Bio",
+                    style: TextStyle(
+                      color: Colors.white, // Button text color
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Center(
+                child: ElevatedButton(
+                  onPressed: _logout,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red, // Logout button color
+                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: const Text(
+                    "Logout",
                     style: TextStyle(
                       color: Colors.white, // Button text color
                       fontSize: 16,

@@ -20,6 +20,8 @@ class PostsPage extends StatefulWidget {
 
 class _PostsPageState extends State<PostsPage> {
   final TextEditingController postController = TextEditingController();
+  final TextEditingController searchController = TextEditingController();
+  String searchKeyword = "";
 
   Future<void> _createPost() async {
     if (postController.text.trim().isEmpty) return;
@@ -94,19 +96,19 @@ class _PostsPageState extends State<PostsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromRGBO(1, 10, 27, 1), // Dark background
+      backgroundColor: const Color.fromRGBO(1, 10, 27, 1),
       body: Column(
         children: [
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: TextField(
               controller: postController,
-              style: const TextStyle(color: Colors.white), // Text color in dark mode
+              style: const TextStyle(color: Colors.white),
               decoration: InputDecoration(
                 labelText: 'What\'s on your mind?',
                 labelStyle: const TextStyle(color: Colors.grey),
                 filled: true,
-                fillColor: const Color.fromRGBO(20, 30, 50, 1), // Input field background
+                fillColor: const Color.fromRGBO(20, 30, 50, 1),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none,
@@ -118,6 +120,33 @@ class _PostsPageState extends State<PostsPage> {
               ),
             ),
           ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: TextField(
+              controller: searchController,
+              style: const TextStyle(color: Colors.white),
+              onChanged: (value) {
+                setState(() {
+                  searchKeyword = value.trim().toLowerCase();
+                });
+              },
+              decoration: InputDecoration(
+                labelText: 'Search posts...',
+                labelStyle: const TextStyle(color: Colors.grey),
+                filled: true,
+                fillColor: const Color.fromRGBO(20, 30, 50, 1),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+                suffixIcon: IconButton(
+                  icon: const Icon(Icons.search, color: Colors.white),
+                  onPressed: () {},
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16), // Spacing added here
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
@@ -138,7 +167,19 @@ class _PostsPageState extends State<PostsPage> {
                   );
                 }
 
-                final posts = snapshot.data!.docs;
+                final posts = snapshot.data!.docs.where((doc) {
+                  final content = (doc['content'] ?? "").toString().toLowerCase();
+                  return searchKeyword.isEmpty || content.contains(searchKeyword);
+                }).toList();
+
+                if (posts.isEmpty) {
+                  return const Center(
+                    child: Text(
+                      "No matching posts found.",
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  );
+                }
 
                 return ListView.builder(
                   itemCount: posts.length,
