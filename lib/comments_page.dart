@@ -19,7 +19,7 @@ class CommentsPage extends StatelessWidget {
     try {
       final userDoc = await FirebaseFirestore.instance
           .collection('tbl_users')
-          .where('user_id', isEqualTo: int.parse(userId)) // Ensure parsing
+          .where('user_id', isEqualTo: int.parse(userId))
           .get();
 
       if (userDoc.docs.isNotEmpty) {
@@ -46,7 +46,7 @@ class CommentsPage extends StatelessWidget {
         'post_id': postId,
         'user_id': currentUserId.toString(),
         'content': content.trim(),
-        'timestamp': Timestamp.now(),
+        'timestamp': Timestamp.now(), // Include timestamp
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -64,36 +64,34 @@ class CommentsPage extends StatelessWidget {
     final TextEditingController commentController = TextEditingController();
 
     return Scaffold(
-      backgroundColor: const Color.fromRGBO(1, 10, 27, 1), // Dark background
+      backgroundColor: const Color.fromRGBO(1, 10, 27, 1),
       appBar: AppBar(
-        backgroundColor: const Color.fromRGBO(20, 30, 50, 1), // Darker AppBar
+        backgroundColor: const Color.fromRGBO(20, 30, 50, 1),
         title: const Text(
           "Comments",
-          style: TextStyle(
-              color: Colors.white, fontWeight: FontWeight.bold), // White text for contrast
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
-        iconTheme: const IconThemeData(color: Colors.white), // White back arrow
+        iconTheme: const IconThemeData(color: Colors.white),
         elevation: 0,
       ),
       body: Column(
         children: [
-          // Add comment field
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: TextField(
               controller: commentController,
-              style: const TextStyle(color: Colors.white), // Input text color
+              style: const TextStyle(color: Colors.white),
               decoration: InputDecoration(
                 labelText: 'Add a comment...',
-                labelStyle: const TextStyle(color: Colors.grey), // Label color
+                labelStyle: const TextStyle(color: Colors.grey),
                 filled: true,
-                fillColor: const Color.fromRGBO(20, 30, 50, 1), // Dark input field
+                fillColor: const Color.fromRGBO(20, 30, 50, 1),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                   borderSide: BorderSide.none,
                 ),
                 suffixIcon: IconButton(
-                  icon: const Icon(Icons.send, color: Colors.blueAccent), // Highlighted arrow
+                  icon: const Icon(Icons.send, color: Colors.blueAccent),
                   onPressed: () {
                     _postComment(context, commentController.text);
                     commentController.clear();
@@ -102,7 +100,6 @@ class CommentsPage extends StatelessWidget {
               ),
             ),
           ),
-          // Display comments
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
@@ -118,7 +115,7 @@ class CommentsPage extends StatelessWidget {
                   return const Center(
                     child: Text(
                       "No comments yet.",
-                      style: TextStyle(color: Colors.grey), // Grey text for empty state
+                      style: TextStyle(color: Colors.grey),
                     ),
                   );
                 }
@@ -129,7 +126,7 @@ class CommentsPage extends StatelessWidget {
                 return ListView.separated(
                   itemCount: comments.length,
                   separatorBuilder: (context, index) => Divider(
-                    color: Colors.grey.withOpacity(0.3), // Subtle divider color
+                    color: Colors.grey.withOpacity(0.3),
                     thickness: 0.5,
                     indent: 16,
                     endIndent: 16,
@@ -137,6 +134,7 @@ class CommentsPage extends StatelessWidget {
                   itemBuilder: (context, index) {
                     final comment = comments[index];
                     final content = comment['content'] ?? 'No content';
+                    final timestamp = (comment['timestamp'] as Timestamp).toDate();
                     final commentUserId = comment['user_id'];
 
                     return FutureBuilder<Map<String, String>>(
@@ -161,11 +159,20 @@ class CommentsPage extends StatelessWidget {
                         return ListTile(
                           title: Text(
                             "${userName['firstName']} ${userName['lastName']}",
-                            style: const TextStyle(color: Colors.white), // White text
+                            style: const TextStyle(color: Colors.white),
                           ),
-                          subtitle: Text(
-                            content,
-                            style: const TextStyle(color: Colors.grey), // Grey text for content
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                content,
+                                style: const TextStyle(color: Colors.grey),
+                              ),
+                              Text(
+                                "${timestamp.day}/${timestamp.month}/${timestamp.year} ${timestamp.hour}:${timestamp.minute}",
+                                style: const TextStyle(color: Colors.grey, fontSize: 12),
+                              ),
+                            ],
                           ),
                         );
                       },
